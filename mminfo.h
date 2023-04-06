@@ -14,8 +14,8 @@
     \brief Настройки модуля MM
 */
 #define DECLARE_MM_INFO(expander) \
-        expander(MM_EPREFIX, NFOVTermotable, Termotable) \
-        expander(MM_EPREFIX, WFOVTermotable, Termotable) \
+        expander(MM_EPREFIX, NFOVTermotable, ThermoTable) \
+        expander(MM_EPREFIX, WFOVTermotable, ThermoTable) \
         expander(MM_EPREFIX, NFOVBasePosition, float) \
         expander(MM_EPREFIX, WFOVBasePosition, float) \
         expander(MM_EPREFIX, CalibrationPosition, float) \
@@ -77,53 +77,34 @@
 */
 #define MM_FIELD_CODE(member) STRUCT_FIELD_CODE(MM_EPREFIX, member)
 
-
 /**
     \ingroup mm_structs
     \brief Таблица поправок на терморасстраиваемость
 */
-typedef float Termotable[TERMOTABLE_ROW_COUNT][TERMOTABLE_COLUMN_COUNT];
+typedef float ThermoTable[TERMOTABLE_ROW_COUNT][TERMOTABLE_COLUMN_COUNT];
 /**
     \ingroup mm_enums
     \brief Тестовое перечисление 1
 */
-typedef enum {DECLARE_FRUITS(ENUM_EXPANDER_DECL)} Fruits;
-
+TYPEDEF_ENUM(Fruits, FRUITS_EPREFIX, DECLARE_FRUITS)
 /**
     \ingroup mm_enums
     \brief Тестовое перечисление 2
 */
-typedef enum {DECLARE_COMMANDS(ENUM_EXPANDER_DECL_DESIGNATED)} Commands;
-
-/**
-    \ingroup mm_enums
-    \brief Номера полей в \ref MMInfoStruct
-*/
-enum {DECLARE_MM_INFO(STRUCT_EXPANDER_AS_ENUM) MMCNT_ALL};
+TYPEDEF_ENUM_DESIGNATED(Commands, COMMANDS_EPREFIX, DECLARE_COMMANDS)
 /**
     \ingroup mm_structs
     \brief Настройки модуля MM
 */
-typedef struct {DECLARE_MM_INFO(STRUCT_EXPANDER_AS_FIELD)} __attribute__((packed)) MMInfoStruct;
+TYPEDEF_STRUCT(MmTest, MM_EPREFIX, DECLARE_MM_INFO, packed)
 
 
 #define REQUEST_EPREFIX RQ
 #define DECLARE_REQUEST(expander) \
         expander(REQUEST_EPREFIX, fruit, Fruits, 8) \
         expander(REQUEST_EPREFIX, cmd, Commands, 8)
+TYPEDEF_BITFIELDS(Request, REQUEST_EPREFIX, DECLARE_REQUEST)
 
-enum {DECLARE_REQUEST(BITFIELDS_EXPANDER_AS_ENUM)};
-typedef struct {DECLARE_REQUEST(BITFIELDS_EXPANDER_AS_FIELD)} __attribute__((packed)) Request;
-
-// принтеры MMInfo
-int sprint_mm(char *stream, const MMInfoStruct *s);
-int sprint_Termotable(char *stream, const Termotable table);
-int sprint_Fruits(char *stream, Fruits fruit);
-int sprint_Commands(char *stream, Commands cmd);
-// строкофикаторы перечислений
-const char *stringify_fruit(Fruits fruit);
-const char *stringify_cmd(Commands cmd);
-
-int sprint_request(char *stream, const Request *s);
+int sprint_ThermoTable(char *stream, const ThermoTable table);
 
 #endif // MMINFO_H

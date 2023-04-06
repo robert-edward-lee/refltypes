@@ -2,12 +2,9 @@
 #include <stdio.h>
 
 #include "mminfo.h"
- 
-static const char *const fr_str[] = {DECLARE_FRUITS(ENUM_EXPANDER_STR)};
-static const char *const cmd_str[] = {DECLARE_COMMANDS(ENUM_EXPANDER_STR_DESIGNATED)};
 
 int main(void) {
-    MMInfoStruct item = {
+    MmTest item = {
         .NFOVTermotable = {
             {1.279, 1.140, 1.000, 0.860, 0.720, 0.581, 0.441, 0.301, 0.161, 0.022, -0.117, -0.257, -0.327, -0.397, -0.466},
             {2.179, 2.040, 1.900, 1.760, 1.620, 1.481, 1.341, 1.201, 1.061, 0.922, 0.782, 0.642, 0.572, 0.502, 0.433},
@@ -32,7 +29,7 @@ int main(void) {
     };
 
     char buf[1024];
-    if(sprint_mm(buf, &item) > 0) fputs(buf, stdout);
+    if(sprint_MmTest(buf, &item) > 0) fputs(buf, stdout);
 
 
     Request req = {
@@ -42,20 +39,12 @@ int main(void) {
 
     printf("\n\n\n");
 
-    if(sprint_request(buf, &req) > 0) fputs(buf, stdout);
+    if(sprint_Request(buf, &req) > 0) fputs(buf, stdout);
 
     return 0;
 }
 
-int sprint_mm(char *stream, const MMInfoStruct *s) {
-    char *end_stream = stream;
-IGNORE_WARNING_PUSH("-Waddress-of-packed-member")
-    DECLARE_MM_INFO(STRUCT_EXPANDER_AS_PRINTER)
-IGNORE_WARNING_POP()
-    return end_stream - stream;
-}
-
-int sprint_Termotable(char *stream, const Termotable table) {
+int sprint_ThermoTable(char *stream, const ThermoTable table) {
     int i, j;
     bool first = true;
     char *end_stream = stream;
@@ -74,27 +63,5 @@ int sprint_Termotable(char *stream, const Termotable table) {
         end_stream += sprintf(end_stream, "},\n");
     }
     end_stream += sprintf(end_stream, "}");
-    return end_stream - stream;
-}
-
-int sprint_Fruits(char *stream, Fruits fruit) {
-    return sprintf(stream, "%s", fr_str[fruit]);
-}
-
-int sprint_Commands(char *stream, Commands cmd) {
-    return sprintf(stream, "%s", cmd_str[(size_t)cmd]);
-}
-
-const char *stringify_fruit(Fruits fruit) {
-    return fr_str[fruit];
-}
-
-const char *stringify_cmd(Commands cmd) {
-    return cmd_str[(size_t)cmd];
-}
-
-int sprint_request(char *stream, const Request *s) {
-    char *end_stream = stream;
-    DECLARE_REQUEST(BITFIELDS_EXPANDER_AS_PRINTER)
     return end_stream - stream;
 }

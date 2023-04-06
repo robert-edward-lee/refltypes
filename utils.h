@@ -1,3 +1,37 @@
+/**
+    \file utils.h
+    \brief Служебный файл
+
+    объявление полей:
+    \code
+    #define DECLARE_<STRUCT>(expander) \
+            expander(<STRUCT_EPREFIX>, <field0>, <type_field0>) \
+            expander(<STRUCT_EPREFIX>, <field1>, <type_field1>) \
+            ...
+    \endcode
+
+    объявление самой структуры:
+    \code
+    typedef struct {DECLARE_<STRUCT>(STRUCT_EXPANDER_AS_FIELD)} <StructType>;
+    \endcode
+
+    объявление перечисления:
+    \code
+    enum {DECLARE_<STRUCT>(STRUCT_EXPANDER_AS_ENUM) <STRUCT_EPREFIX>_ALL};
+    \endcode
+
+    объявление функции печати:
+    \code
+    int sprint_<STRUCT>(char *stream, const <Struct Type> *s) {
+        char *end_stream = stream;
+        DECLARE_<STRUCT>(STRUCT_EXPANDER_AS_PRINTER)
+        return end_stream - stream;
+    }
+    \endcode
+    Где stream - выходной буфер, s - адрес структуры, временная переменная end_stream - указатель на конец сообщения.
+    Сущности в фигурных скобках указываются конкретно для каждого случая, остальные же имена оставить как есть.
+*/
+
 #ifndef UTILS_H
 #define UTILS_H
 
@@ -5,20 +39,6 @@
 #define CONCAT_(x, y) x##_##y
 
 // -------------------- struct utils --------------------
-/**
-   Применение:
-    ```c
-    #define DECLARE_<STRUCT>(expander) \
-            expander(<STRUCT_PREFIX>, <field0>, <type_field0>) \
-            expander(<STRUCT_PREFIX>, <field1>, <type_field1>) \
-            ...
-
-    enum {DECLARE<STRUCT>(STRUCT_EXPANDER_AS_ENUM) <STRUCT_PREFIX>_ALL};
-    typedef struct {DECLARE<STRUCT>(STRUCT_EXPANDER_AS_FIELD)} <StructType>;
-    ```
-    \note <STRUCT_PREFIX> это префикс для перечислений, с помощью которых кодируются поля структуры
-*/
-
 /**
     \brief Расширитель объявления структуры для объявления её полей
 */
@@ -32,21 +52,10 @@
     field1: value1
     field2: value2
     ...
-
-    Пример использования:
-    ```c
-    int sprint_<smthng>(char *stream, const <Struct Type> *s) {
-        char *end_stream = stream;
-        DECLARE_<SOME_STRUCT>(STRUCT_EXPANDER_AS_PRINTER, <PREFIX>)
-        return end_stream - stream;
-    }
-    ```
-    Где stream - выходной буфер, s - адрес структуры, временная переменная end_stream - указатель на конец сообщения.
-    Сущности в фигурных скобках указываются конкретно для каждого случая, остальные же имена оставить как есть.
 */
 #define STRUCT_EXPANDER_AS_PRINTER(_eprefix, member, type) \
     end_stream += sprintf(end_stream, #member ": "); \
-    end_stream += sprint##_##type(end_stream, s->member); \
+    end_stream += CONCAT_(sprint, type)(end_stream, s->member); \
     end_stream += sprintf(end_stream, "\n");
 /**
     \brief Получение порядкового номера поля структуры
@@ -56,6 +65,14 @@
     \brief Получение кода поля структуры, что является битовым флагом
 */
 #define STRUCT_FIELD_CODE(eprefix, member) (1 << STRUCT_FIELD_NUMBER(eprefix, member))
+#define TYPEDEF_STRUCT(type, eprefix, declarator, ...) \
+    typedef struct CONCAT_(_, type) {declarator(STRUCT_EXPANDER_AS_FIELD)} __attribute__((__VA_ARGS__)) type; \
+    enum {declarator(STRUCT_EXPANDER_AS_ENUM) CONCAT_(eprefix, ALL)}; \
+    int CONCAT_(sprint, type) (char *stream, const type *s) { \
+        char *end_stream = stream; \
+        declarator(STRUCT_EXPANDER_AS_PRINTER) \
+        return end_stream - stream; \
+    }
 // -------------------- bitfields utils --------------------
 #define BITFIELDS_EXPANDER_AS_FIELD(_eprefix, member, type, size) type member: size;
 #define BITFIELDS_EXPANDER_AS_ENUM(eprefix, member, _type, _size) CONCAT_(eprefix, member),
@@ -63,6 +80,16 @@
     end_stream += sprintf(end_stream, #member ": "); \
     end_stream += sprint##_##type(end_stream, s->member); \
     end_stream += sprintf(end_stream, "\n");
+
+#define TYPEDEF_BITFIELDS(type, eprefix, declarator, ...) \
+    typedef struct CONCAT_(_, type) {declarator(BITFIELDS_EXPANDER_AS_FIELD)} __attribute__((__VA_ARGS__)) type; \
+    enum {declarator(BITFIELDS_EXPANDER_AS_ENUM) CONCAT_(eprefix, ALL)}; \
+    int CONCAT_(sprint, type) (char *stream, const type *s) { \
+        char *end_stream = stream; \
+        declarator(BITFIELDS_EXPANDER_AS_PRINTER) \
+        return end_stream - stream; \
+    }
+
 // -------------------- enum utils --------------------
 /**
     \brief Расширитель объявления перечисления для его инициализации
@@ -72,6 +99,13 @@
     \brief Расширитель объявления перечисления в качестве массива строк
 */
 #define ENUM_EXPANDER_STR(_eprefix, name) #name,
+
+#define TYPEDEF_ENUM(type, eprefix, declarator) \
+    typedef enum {declarator(ENUM_EXPANDER_DECL)} type; \
+    static const char *const CONCAT_(type, str)[] = {declarator(ENUM_EXPANDER_STR)}; \
+    const char *CONCAT_(stringify, type)(type e) {return CONCAT_(type, str)[e];} \
+    int CONCAT_(sprint, type)(char *stream, type e) {return sprintf(stream, "%s", CONCAT_(type, str)[e]);}
+
 /**
     \brief Расширитель объявления перечисления для его инициализации при назначенном инициализаторе
     \note Нельзя пользоваться отрицательными значениями, возможно пока
@@ -82,6 +116,13 @@
     \note Нельзя пользоваться отрицательными значениями, возможно пока
 */
 #define ENUM_EXPANDER_STR_DESIGNATED(_eprefix, name, val) [val] = #name,
+
+#define TYPEDEF_ENUM_DESIGNATED(type, eprefix, declarator) \
+    typedef enum {declarator(ENUM_EXPANDER_DECL_DESIGNATED)} type; \
+    static const char *const CONCAT_(type, str)[] = {declarator(ENUM_EXPANDER_STR_DESIGNATED)}; \
+    const char *CONCAT_(stringify, type)(type e) {return CONCAT_(type, str)[e];} \
+    int CONCAT_(sprint, type)(char *stream, type e) {return sprintf(stream, "%s", CONCAT_(type, str)[e]);}
+
 
 // -------------------- printers --------------------
 #define sprint_uint8_t(buf, val) sprintf(buf, "%u", val)
