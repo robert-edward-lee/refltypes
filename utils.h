@@ -65,12 +65,13 @@
     \brief Получение кода поля структуры, что является битовым флагом
 */
 #define STRUCT_FIELD_CODE(eprefix, member) (1 << STRUCT_FIELD_NUMBER(eprefix, member))
+
 #define TYPEDEF_STRUCT(type, eprefix, declarator, ...) \
-    typedef struct CONCAT_(_, type) {declarator(STRUCT_EXPANDER_AS_FIELD)} __attribute__((__VA_ARGS__)) type; \
-    enum {declarator(STRUCT_EXPANDER_AS_ENUM) CONCAT_(eprefix, ALL)}; \
+    typedef struct CONCAT_(_, type) {declarator(STRUCT_EXPANDER_AS_FIELD, eprefix)} __attribute__((__VA_ARGS__)) type; \
+    enum {declarator(STRUCT_EXPANDER_AS_ENUM, eprefix) CONCAT_(eprefix, ALL)}; \
     int CONCAT_(sprint, type) (char *stream, const type *s) { \
         char *end_stream = stream; \
-        declarator(STRUCT_EXPANDER_AS_PRINTER) \
+        declarator(STRUCT_EXPANDER_AS_PRINTER, eprefix) \
         return end_stream - stream; \
     }
 // -------------------- bitfields utils --------------------
@@ -82,11 +83,11 @@
     end_stream += sprintf(end_stream, "\n");
 
 #define TYPEDEF_BITFIELDS(type, eprefix, declarator, ...) \
-    typedef struct CONCAT_(_, type) {declarator(BITFIELDS_EXPANDER_AS_FIELD)} __attribute__((__VA_ARGS__)) type; \
-    enum {declarator(BITFIELDS_EXPANDER_AS_ENUM) CONCAT_(eprefix, ALL)}; \
+    typedef struct CONCAT_(_, type) {declarator(BITFIELDS_EXPANDER_AS_FIELD, eprefix)} __attribute__((__VA_ARGS__)) type; \
+    enum {declarator(BITFIELDS_EXPANDER_AS_ENUM, eprefix) CONCAT_(eprefix, ALL)}; \
     int CONCAT_(sprint, type) (char *stream, const type *s) { \
         char *end_stream = stream; \
-        declarator(BITFIELDS_EXPANDER_AS_PRINTER) \
+        declarator(BITFIELDS_EXPANDER_AS_PRINTER, eprefix) \
         return end_stream - stream; \
     }
 
@@ -101,8 +102,8 @@
 #define ENUM_EXPANDER_STR(_eprefix, name) #name,
 
 #define TYPEDEF_ENUM(type, eprefix, declarator) \
-    typedef enum {declarator(ENUM_EXPANDER_DECL)} type; \
-    static const char *const CONCAT_(type, str)[] = {declarator(ENUM_EXPANDER_STR)}; \
+    typedef enum {declarator(ENUM_EXPANDER_DECL, eprefix) CONCAT_(eprefix, ALL)} type; \
+    static const char *const CONCAT_(type, str)[] = {declarator(ENUM_EXPANDER_STR, eprefix)}; \
     const char *CONCAT_(stringify, type)(type e) {return CONCAT_(type, str)[e];} \
     int CONCAT_(sprint, type)(char *stream, type e) {return sprintf(stream, "%s", CONCAT_(type, str)[e]);}
 
@@ -118,8 +119,8 @@
 #define ENUM_EXPANDER_STR_DESIGNATED(_eprefix, name, val) [val] = #name,
 
 #define TYPEDEF_ENUM_DESIGNATED(type, eprefix, declarator) \
-    typedef enum {declarator(ENUM_EXPANDER_DECL_DESIGNATED)} type; \
-    static const char *const CONCAT_(type, str)[] = {declarator(ENUM_EXPANDER_STR_DESIGNATED)}; \
+    typedef enum {declarator(ENUM_EXPANDER_DECL_DESIGNATED, eprefix)} type; \
+    static const char *const CONCAT_(type, str)[] = {declarator(ENUM_EXPANDER_STR_DESIGNATED, eprefix)}; \
     const char *CONCAT_(stringify, type)(type e) {return CONCAT_(type, str)[e];} \
     int CONCAT_(sprint, type)(char *stream, type e) {return sprintf(stream, "%s", CONCAT_(type, str)[e]);}
 
