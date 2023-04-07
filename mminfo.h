@@ -1,20 +1,22 @@
 #ifndef MMINFO_H
 #define MMINFO_H
 
+#include <stddef.h>
 #include <stdint.h>
+#include <time.h>
+
 #include "utils.h"
 
 /**
     \ingroup mm_defs
-    \brief Количество столбцов в таблицах термокомпенсации
+    \brief Количество строк в таблице термокомпенсации
 */
-#define TERMOTABLE_COLUMN_COUNT 15
+#define THERMO_TABLE_ROWS 2
 /**
     \ingroup mm_defs
-    \brief Общее количество строк в таблице термокомпенсации
+    \brief Общее количество столбцов в таблице термокомпенсации
 */
-#define TERMOTABLE_ROW_COUNT 2
-
+#define THERMO_TABLE_COLUMNS 15
 
 //  ---------------------------------------------
 /**
@@ -52,17 +54,18 @@ TYPEDEF_ENUM(Fruits, FR, DECLARE_FRUITS)
     \ingroup mm_structs
     \brief Таблица поправок на терморасстраиваемость
 */
-typedef float ThermoTable[TERMOTABLE_ROW_COUNT][TERMOTABLE_COLUMN_COUNT];
+typedef float ThermoTable[THERMO_TABLE_ROWS][THERMO_TABLE_COLUMNS];
+int sprint_ThermoTable(char *stream, const ThermoTable table);
 //  ---------------------------------------------
 /**
     \ingroup mm_defs
     \brief Настройки модуля MM
 */
 #define DECLARE_MM_INFO(expander, _) \
-        expander(_, NFOVTermotable, ThermoTable) \
-        expander(_, WFOVTermotable, ThermoTable) \
-        expander(_, NFOVBasePosition, float) \
-        expander(_, WFOVBasePosition, float) \
+        expander(_, NfovThermoTable, ThermoTable) \
+        expander(_, WfovThermoTable, ThermoTable) \
+        expander(_, NfovBasePosition, float) \
+        expander(_, WfovBasePosition, float) \
         expander(_, CalibrationPosition, float) \
         expander(_, FocusSpeedMin, float) \
         expander(_, FocusSpeedMax, float) \
@@ -73,7 +76,10 @@ typedef float ThermoTable[TERMOTABLE_ROW_COUNT][TERMOTABLE_COLUMN_COUNT];
         expander(_, ExchangeErrorNumber, uint8_t) \
         expander(_, TemperatureDelta, float) \
         expander(_, Fruit, Fruits) \
-        expander(_, Command, Commands)
+        expander(_, Command, Commands) \
+        expander(_, is_cool, bool) \
+        expander(_, timer, time_t) \
+        expander(_, ptrdiff, ptrdiff_t)
 /**
     \ingroup mm_structs
     \brief Настройки модуля MM
@@ -90,7 +96,5 @@ TYPEDEF_STRUCT(MmTest, MMCNT, DECLARE_MM_INFO, packed)
         expander(_, cmd, Commands, 8)
 TYPEDEF_BITFIELDS(Request, RQ, DECLARE_REQUEST, packed)
 #define REQUEST_FIELD_CODE(member) STRUCT_FIELD_CODE(RQ, member)
-//  ---------------------------------------------
-int sprint_ThermoTable(char *stream, const ThermoTable table);
 
 #endif // MMINFO_H
