@@ -30,12 +30,12 @@ IGNORE_WARNING_PUSH("-Wpointer-arith")
         .is_cool = true,
         .timer = 12651837659,
         .ptrdiff = (void *)0xDEADBEEF - NULL,
+        .sptr = (ptr_t)-1,
     };
 IGNORE_WARNING_POP()
 
     char buf[1024];
     if(sprint_MmTest(buf, &item) > 0) fputs(buf, stdout);
-
 
     Request req = {
         .fruit = FR_BANANA,
@@ -43,7 +43,6 @@ IGNORE_WARNING_POP()
     };
 
     printf("\n\n\n");
-
     if(sprint_Request(buf, &req) > 0) fputs(buf, stdout);
 
     return 0;

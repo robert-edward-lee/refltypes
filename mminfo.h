@@ -79,7 +79,8 @@ int sprint_ThermoTable(char *stream, const ThermoTable table);
         expander(_, Command, Commands) \
         expander(_, is_cool, bool) \
         expander(_, timer, time_t) \
-        expander(_, ptrdiff, ptrdiff_t)
+        expander(_, ptrdiff, ptrdiff_t) \
+        expander(_, sptr, ptr_t)
 /**
     \ingroup mm_structs
     \brief Настройки модуля MM
