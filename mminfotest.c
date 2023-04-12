@@ -1,6 +1,6 @@
 #include <stdbool.h>
 #include <stdio.h>
-
+#include <stdlib.h>
 #include "mminfo.h"
 
 int main(void) {
@@ -31,30 +31,26 @@ IGNORE_WARNING_PUSH("-Wpointer-arith")
         .timer = 12651837659,
         .ptrdiff = (void *)0xDEADBEEF - NULL,
         .sptr = (ptr_t)-1,
+        .req = {
+            .cmd = CMD_ERROR,
+            .fruit = FR_PEAR,
+        }
     };
 IGNORE_WARNING_POP()
 
-    char buf[1024];
-    if(sprint_MmTest(buf, &item) > 0) fputs(buf, stdout);
-
-    Request req = {
-        .fruit = FR_BANANA,
-        .cmd = CMD_DRIVE_LINE,
-    };
-
-    printf("\n\n\n");
-    if(sprint_Request(buf, &req) > 0) fputs(buf, stdout);
+    char buf[1024 * 2];
+    if(sprint_MmTest(buf, item, 0, "item") > 0) fputs(buf, stdout);
 
     return 0;
 }
 
-int sprint_ThermoTable(char *stream, const ThermoTable table) {
+int sprint_ThermoTable(char *stream, const ThermoTable table, int lvl, const char *prefix) {
     int i, j;
     bool first = true;
     char *end_stream = stream;
-    end_stream += sprintf(end_stream, "{\n");
+    end_stream += sprintf(end_stream, "%*s%s: \n", lvl, "", prefix);
     for(i = 0; i < THERMO_TABLE_ROWS; i++) {
-        end_stream += sprintf(end_stream, "\t{");
+        end_stream += sprintf(end_stream, "%*s[", lvl+4, "");
         for(j = 0; j < THERMO_TABLE_COLUMNS; j++) {
             if(!first) {
                 end_stream += sprintf(end_stream, ", ");
@@ -64,8 +60,7 @@ int sprint_ThermoTable(char *stream, const ThermoTable table) {
             end_stream += sprintf(end_stream, "%+-5.3f", table[i][j]);
         }
         first = true;
-        end_stream += sprintf(end_stream, "},\n");
+        end_stream += sprintf(end_stream, "]\n");
     }
-    end_stream += sprintf(end_stream, "}");
     return end_stream - stream;
 }
