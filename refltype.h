@@ -1,9 +1,5 @@
-/**
-    \file utils.h
-    \brief Служебный файл
-*/
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef REFLTYPE_H
+#define REFLTYPE_H
 
 #include <inttypes.h>
 
@@ -178,4 +174,4 @@ typedef void *ptr_t;
 #define sprint_float(stream, val, lvl, prefix) sprintf(stream, "%*s%s: %g\n", lvl, "", prefix, val)
 #define sprint_double(stream, val, lvl, prefix) sprintf(stream, "%*s%s: %lg\n", lvl, "", prefix, val)
 
-#endif // UTILS_H
+#endif // REFLTYPE_H

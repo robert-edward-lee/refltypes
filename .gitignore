@@ -1,5 +1,6 @@
 .vscode/
 a.*
+test.*
 *.7z
 *.asm
 _*.c

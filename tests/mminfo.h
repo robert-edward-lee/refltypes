@@ -1,11 +1,12 @@
 #ifndef MMINFO_H
 #define MMINFO_H
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <time.h>
 
-#include "utils.h"
+#include "refltype.h"
 
 #define THERMO_TABLE_ROWS 2
 #define THERMO_TABLE_COLUMNS 15

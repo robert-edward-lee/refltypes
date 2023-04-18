@@ -1,6 +1,6 @@
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "mminfo.h"
 
 int main(void) {
