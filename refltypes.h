@@ -1,5 +1,5 @@
-#ifndef REFLTYPE_H
-#define REFLTYPE_H
+#ifndef REFLTYPES_H
+#define REFLTYPES_H
 
 #include <inttypes.h>
 
@@ -22,17 +22,15 @@
 #define STRUCT_EXPANDER_AS_FIELD(_eprefix, member, type) type member;
 #define STRUCT_EXPANDER_AS_ENUM(eprefix, member, _type) CONCAT_(eprefix, member),
 #define STRUCT_EXPANDER_AS_PRINTER(_eprefix, member, type) \
-    IGNORE_WARNING_PUSH("-Waddress-of-packed-member") \
-    end_stream += CONCAT_(sprint, type)(end_stream, s.member, lvl+4, #member); \
-    IGNORE_WARNING_POP()
+    end_stream += CONCAT_(sprint, type)(end_stream, s.member, lvl+4, #member);
 /**
     \brief Получение порядкового номера поля структуры
 */
-#define STRUCT_FIELD_NUMBER(eprefix, member) CONCAT_(eprefix, member)
+#define STRUCT_FIELD_NUMBER(eprefix, member) STRUCT_EXPANDER_AS_ENUM(eprefix, member, _)
 /**
     \brief Получение кода поля структуры, что является битовым флагом
 */
-#define STRUCT_FIELD_CODE(eprefix, member) (1 << STRUCT_FIELD_NUMBER(eprefix, member))
+#define STRUCT_FIELD_CODE(eprefix, member) ((unsigned long long)1 << STRUCT_FIELD_NUMBER(eprefix, member))
 /**
     \param type Тип структуры
     \param eprefix Префикс перед элементами перечисления, необходим для рефлексии структуры
@@ -55,16 +53,18 @@
     typedef struct CONCAT_(_, type) {declarator(STRUCT_EXPANDER_AS_FIELD, eprefix)} \
     __attribute__((__VA_ARGS__)) type; \
     enum {declarator(STRUCT_EXPANDER_AS_ENUM, eprefix) CONCAT_(eprefix, ALL)}; \
-    int CONCAT_(sprint, type) (char *stream, const type s, int lvl, const char *prefix) { \
+    int CONCAT_(sprint, type)(char *stream, type s, int lvl, const char *prefix) { \
         char *end_stream = stream; \
         if(prefix) end_stream += sprintf(end_stream, "%s: ", prefix); \
         end_stream += sprintf(end_stream, "\n"); \
+        IGNORE_WARNING_PUSH("-Waddress-of-packed-member") \
         declarator(STRUCT_EXPANDER_AS_PRINTER, eprefix) \
+        IGNORE_WARNING_POP() \
         return end_stream - stream; \
     }
 // -------------------- bitfields utils --------------------
 #define BITFIELDS_EXPANDER_AS_FIELD(_eprefix, member, type, size) type member: size;
-#define BITFIELDS_EXPANDER_AS_ENUM(eprefix, member, _type, _size) CONCAT_(eprefix, member),
+#define BITFIELDS_EXPANDER_AS_ENUM(eprefix, member, _type, _size) STRUCT_EXPANDER_AS_ENUM(eprefix, member, _type)
 #define BITFIELDS_EXPANDER_AS_PRINTER(_eprefix, member, type, _size) \
     end_stream += sprint##_##type(end_stream, s.member, lvl+4, #member);
 /**
@@ -89,11 +89,13 @@
     typedef struct CONCAT_(_, type) {declarator(BITFIELDS_EXPANDER_AS_FIELD, eprefix)} \
     __attribute__((__VA_ARGS__)) type; \
     enum {declarator(BITFIELDS_EXPANDER_AS_ENUM, eprefix) CONCAT_(eprefix, ALL)}; \
-    int CONCAT_(sprint, type) (char *stream, type s, int lvl, const char *prefix) { \
+    int CONCAT_(sprint, type)(char *stream, type s, int lvl, const char *prefix) { \
         char *end_stream = stream; \
         if(prefix) end_stream += sprintf(end_stream, "%*s%s: ", lvl, "", prefix); \
         end_stream += sprintf(end_stream, "\n"); \
+        IGNORE_WARNING_PUSH("-Waddress-of-packed-member") \
         declarator(BITFIELDS_EXPANDER_AS_PRINTER, eprefix) \
+        IGNORE_WARNING_POP() \
         return end_stream - stream; \
     }
 // -------------------- enum utils --------------------
@@ -174,4 +176,4 @@ typedef void *ptr_t;
 #define sprint_float(stream, val, lvl, prefix) sprintf(stream, "%*s%s: %g\n", lvl, "", prefix, val)
 #define sprint_double(stream, val, lvl, prefix) sprintf(stream, "%*s%s: %lg\n", lvl, "", prefix, val)
 
-#endif // REFLTYPE_H
+#endif // REFLTYPES_H

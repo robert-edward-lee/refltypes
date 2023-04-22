@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <time.h>
 
-#include "refltype.h"
+#include "refltypes.h"
 
 #define THERMO_TABLE_ROWS 2
 #define THERMO_TABLE_COLUMNS 15
@@ -27,7 +27,7 @@ TYPEDEF_ENUM_DESIGNATED(Commands, CMD, DECLARE_COMMANDS)
 TYPEDEF_ENUM(Fruits, FR, DECLARE_FRUITS)
 //  ---------------------------------------------
 typedef float ThermoTable[THERMO_TABLE_ROWS][THERMO_TABLE_COLUMNS];
-int sprint_ThermoTable(char *stream, const ThermoTable table, int lvl, const char *prefix);
+int sprint_ThermoTable(char *stream, ThermoTable table, int lvl, const char *prefix);
 //  ---------------------------------------------
 #define DECLARE_REQUEST(expander, _) \
         expander(_, fruit, Fruits, 8) \

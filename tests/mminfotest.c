@@ -40,11 +40,12 @@ IGNORE_WARNING_POP()
 
     char buf[1024 * 2];
     if(sprint_MmTest(buf, item, 0, "item") > 0) fputs(buf, stdout);
+    else printf("Cannot print\n");
 
     return 0;
 }
 
-int sprint_ThermoTable(char *stream, const ThermoTable table, int lvl, const char *prefix) {
+int sprint_ThermoTable(char *stream, ThermoTable table, int lvl, const char *prefix) {
     int i, j;
     bool first = true;
     char *end_stream = stream;
