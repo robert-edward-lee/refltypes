@@ -3,20 +3,27 @@
 
 #include <inttypes.h>
 
-#define CONCAT(x, y) x##y
-#define CONCAT_(x, y) x##_##y
-
 #define DO_PRAGMA(x) _Pragma(#x)
 #if (defined(__GNUC__) && ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))) || defined(__clang__)
-#define IGNORE_WARNING_PUSH(warning) \
-    DO_PRAGMA(GCC diagnostic push) \
-    DO_PRAGMA(GCC diagnostic ignored warning)
-#define IGNORE_WARNING_POP() \
-    DO_PRAGMA(GCC diagnostic pop)
+#define IGNORE_WARNING_PUSH(warning) DO_PRAGMA(GCC diagnostic push) DO_PRAGMA(GCC diagnostic ignored warning)
+#define IGNORE_WARNING_POP() DO_PRAGMA(GCC diagnostic pop)
 #else
 #define IGNORE_WARNING_PUSH(warning)
 #define IGNORE_WARNING_POP()
 #endif
+
+#ifndef _cplusplus
+#define static_assert(condition, reason) \
+        IGNORE_WARNING_PUSH("-Wpedantic") ({ \
+            extern int __attribute__((error("static assertion failed: " reason))) _(); \
+            condition ? 0 : _(); \
+        }); IGNORE_WARNING_POP()
+#endif
+
+#define _CONCAT(x, y) x##y
+#define CONCAT(x, y) _CONCAT(x, y)
+#define _CONCAT_(x, y) x##_##y
+#define CONCAT_(x, y) _CONCAT_(x, y)
 
 // -------------------- struct utils --------------------
 #define STRUCT_EXPANDER_AS_FIELD(_eprefix, member, type) type member;
