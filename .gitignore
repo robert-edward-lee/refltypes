@@ -4,3 +4,4 @@ test.*
 *.7z
 *.asm
 _*.c
+refltest
