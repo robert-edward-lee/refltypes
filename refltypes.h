@@ -73,7 +73,7 @@
 #define BITFIELDS_EXPANDER_AS_FIELD(_eprefix, member, type, size) type member: size;
 #define BITFIELDS_EXPANDER_AS_ENUM(eprefix, member, _type, _size) STRUCT_EXPANDER_AS_ENUM(eprefix, member, _type)
 #define BITFIELDS_EXPANDER_AS_PRINTER(_eprefix, member, type, _size) \
-    end_stream += sprint##_##type(end_stream, s.member, lvl+4, #member);
+    end_stream += CONCAT_(sprint, type)(end_stream, s.member, lvl+4, #member);
 /**
     \param type Тип структуры
     \param eprefix Префикс перед элементами перечисления, необходим для рефлексии структуры
