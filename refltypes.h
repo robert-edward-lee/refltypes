@@ -107,7 +107,7 @@
     }
 // -------------------- enum utils --------------------
 #define ENUM_EXPANDER_DECL(eprefix, name) CONCAT_(eprefix, name),
-#define ENUM_EXPANDER_STR(_eprefix, name) #name,
+#define ENUM_EXPANDER_PRINTER(eprefix, name) case CONCAT_(eprefix, name): return #name;
 /**
     \param type Тип перечисления
     \param eprefix Префикс перед элементом перечисления
@@ -125,13 +125,13 @@
 */
 #define TYPEDEF_ENUM(type, eprefix, declarator) \
     typedef enum {declarator(ENUM_EXPANDER_DECL, eprefix) CONCAT_(eprefix, ALL)} type; \
-    static const char *const CONCAT_(type, str)[] = {declarator(ENUM_EXPANDER_STR, eprefix)}; \
-    const char *CONCAT_(stringify, type)(type e) {return CONCAT_(type, str)[e];} \
+    const char *CONCAT_(stringify, type)(type e) {switch(e) \
+    {declarator(ENUM_EXPANDER_PRINTER, eprefix) default: return "unknown";}} \
     int CONCAT_(sprint, type)(char *stream, type e, int lvl, const char *prefix) \
-    {return sprintf(stream, "%*s%s: %s\n", lvl, "", prefix, CONCAT_(type, str)[e]);}
+    {return sprintf(stream, "%*s%s: %s\n", lvl, "", prefix, CONCAT_(stringify, type)(e));}
 
 #define ENUM_EXPANDER_DECL_DESIGNATED(eprefix, name, val) CONCAT_(eprefix, name) = val,
-#define ENUM_EXPANDER_STR_DESIGNATED(_eprefix, name, val) [val] = #name,
+#define ENUM_EXPANDER_PRINTER_DESIGNATED(eprefix, name, _val) case CONCAT_(eprefix, name): return #name;
 /**
     \param type Тип перечисления
     \param eprefix Префикс перед элементом перечисления
@@ -153,10 +153,10 @@
 */
 #define TYPEDEF_ENUM_DESIGNATED(type, eprefix, declarator) \
     typedef enum {declarator(ENUM_EXPANDER_DECL_DESIGNATED, eprefix)} type; \
-    static const char *const CONCAT_(type, str)[] = {declarator(ENUM_EXPANDER_STR_DESIGNATED, eprefix)}; \
-    const char *CONCAT_(stringify, type)(type e) {return CONCAT_(type, str)[e];} \
+    const char *CONCAT_(stringify, type)(type e) {switch(e) \
+    {declarator(ENUM_EXPANDER_PRINTER_DESIGNATED, eprefix) default: return "unknown";}} \
     int CONCAT_(sprint, type)(char *stream, type e, int lvl, const char *prefix) \
-    {return sprintf(stream, "%*s%s: %s\n", lvl, "", prefix, CONCAT_(type, str)[e]);}
+    {return sprintf(stream, "%*s%s: %s\n", lvl, "", prefix, CONCAT_(stringify, type)(e));}
 
 // void* alias
 typedef void *ptr_t;
